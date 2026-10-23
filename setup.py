@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'eurobot2027_software_vision'
+package_name = 'eurobot_software_vision'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     entry_points={
         'console_scripts': [
             # Aquí vinculamos el comando de terminal con el archivo python
-            'vision_node = eurobot2027_software_vision.vision_node:main'
+            'vision_node = eurobot_software_vision.vision_node:main'
         ],
     },
 )
