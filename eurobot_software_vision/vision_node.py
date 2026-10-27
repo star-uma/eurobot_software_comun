@@ -35,7 +35,7 @@ class VisionNode(Node):
             cv2.aruco.drawDetectedMarkers(cv_image, corners, ids)
             self.get_logger().info(f"Cajas detectadas (IDs): {ids.flatten()}")
 
-        cv2.imshow("Eurobot 2027 - Vision Debug", cv_image)
+        cv2.imshow("Eurobot - Vision Debug", cv_image)
         cv2.waitKey(1)
 
 def main(args=None):

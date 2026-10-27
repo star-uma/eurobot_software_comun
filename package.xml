@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>eurobot2027_software_vision</name>
+  <name>eurobot_software_vision</name>
   <version>0.0.0</version>
-  <description>Paquete eurobot2027_software_vision para Eurobot 2027</description>
+  <description>Paquete eurobot_software_vision para Eurobot </description>
   <maintainer email="ivan@todo.me">TnTivanTnT</maintainer>
   <license>Apache License 2.0</license>
   <depend>rclpy</depend>
