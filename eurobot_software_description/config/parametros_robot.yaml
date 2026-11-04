@@ -1,0 +1,7 @@
+# Dimensions y física del robot
+wheel_radius: 0.0325
+wheel_separation: 0.4
+wheel_length: 0.04
+chassis_length: 0.3
+chassis_width: 0.3
+chassis_height: 0.15

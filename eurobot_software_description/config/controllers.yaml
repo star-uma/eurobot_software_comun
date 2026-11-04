@@ -1,0 +1,48 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 50 # Hz
+
+    # Registra dos controladores activos: el dif_drive y el emisor de estados
+    diff_cont:
+      type: diff_drive_controller/DiffDriveController
+
+    joint_broad:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+# Configuración matemática de la tracción diferencial
+diff_cont:
+  ros__parameters:
+    publish_rate: 50.0
+    use_stamped_vel: false
+    open_loop: true
+    cmd_vel_timeout: 0.25
+
+    left_wheel_names: ["left_wheel_joint"]
+    right_wheel_names: ["right_wheel_joint"]
+
+    wheel_separation_multiplier: 1.0
+    left_wheel_radius_multiplier: 1.0
+    right_wheel_radius_multiplier: 1.0
+
+    command_topic: cmd_vel
+    odom_frame_id: odom
+    base_frame_id: base_link
+    enable_odom_tf: true
+
+    linear:
+      x:
+        has_velocity_limits: true
+        max_velocity: 1.0
+        min_velocity: -1.0
+        has_acceleration_limits: true
+        max_acceleration: 1.0
+        min_acceleration: -1.0
+
+    angular:
+      z:
+        has_velocity_limits: true
+        max_velocity: 2.0
+        min_velocity: -2.0
+        has_acceleration_limits: true
+        max_acceleration: 2.0
+        min_acceleration: -2.0

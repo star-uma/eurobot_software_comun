@@ -1,12 +1,27 @@
 <?xml version="1.0"?>
 <!-- Etiqueta raíz que indica que este es un archivo de robot y que usará variables Xacro -->
 
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="eurobot">
 
+
+    <!-- Cargar el archivo YAML de parámetros centralizado -->
+    <xacro:property name="params_path" value="$(find eurobot_software_description)/config/parametros_robot.yaml" />
+    <xacro:property name="params" value="${xacro.load_yaml(params_path)}" />
+
+    <!-- Extraer variables físicas -->
+    <xacro:property name="wheel_radius" value="${params['wheel_radius']}" />
+    <xacro:property name="wheel_separation" value="${params['wheel_separation']}" />
+    <xacro:property name="wheel_length" value="${params['wheel_length']}" />
+    <xacro:property name="chassis_x" value="${params['chassis_length']}" />
+    <xacro:property name="chassis_y" value="${params['chassis_width']}" />
+    <xacro:property name="chassis_z" value="${params['chassis_height']}" />
 
     <!-- Argumento para alternar entre simulación (true) y robot real (false) -->
     <xacro:arg name="use_sim" default="true"/>
-    
+
+    <!-- Argumento para -->
+    <xacro:arg name="controllers_yaml" default="$(find eurobot_software_description)/config/controllers.yaml"/>
+
     <!-- ########################################################## -->
     <!-- #####################   LIBRERÍAS    ##################### -->
     <!-- ########################################################## -->
@@ -62,9 +77,9 @@
         <visual>
             <!-- Desplazamos el origen visual para que crezca hacia -->
             <!-- adelante (+X) y hacia arriba (+Z) librando el suelo-->
-            <origin xyz="0.15 0 0.075"/>
+            <origin xyz="${chassis_x / 2} 0 ${chassis_z / 2}"/> 
             <geometry>
-                <box size="0.3 0.3 0.15"/>
+                <box size="${chassis_x} ${chassis_y} ${chassis_z}"/>
             </geometry>
             <material name="white"/>
         </visual>
@@ -75,9 +90,9 @@
         <!-- Podemos sustituir el box por un mesh si tenemos un     -->
         <!-- archivo STL con pocos polígonos (menos de 30 caras).  -->
         <collision>
-            <origin xyz="0.15 0 0.075"/>
+            <origin xyz="${chassis_x / 2} 0 ${chassis_z / 2}"/>
             <geometry>
-                <box size="0.3 0.3 0.15"/>
+                <box size="${chassis_x} ${chassis_y} ${chassis_z}"/>
             </geometry>
         </collision>
         
@@ -97,8 +112,8 @@
         
         <!--        FORMA DE USAR LA MACRO DE INERCIA               -->
 
-        <xacro:inertial_box mass="5.0" x="0.3" y="0.3" z="0.15">
-            <origin xyz="0.15 0 0.075" rpy="0 0 0"/>
+        <xacro:inertial_box mass="5.0" x="${chassis_x}" y="${chassis_y}" z="${chassis_z}">
+            <origin xyz="${chassis_x / 2} 0 ${chassis_z / 2}" rpy="0 0 0"/>
         </xacro:inertial_box>
         
 
@@ -136,17 +151,17 @@
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 ${rotacion_z}"/>                               <!-- No necesario ahora pero por si al importar el stl no encaja-->
                 <geometry>
-                    <cylinder radius="0.0325" length="0.04"/>                               <!-- <mesh filename="file://$(find eurobot_software_simulacion)/description/meshes/rueda.stl" scale="1 1 1"/> para cuando se añada el stl-->
+                    <cylinder radius="${wheel_radius}" length="0.04"/>                               <!-- <mesh filename="file://$(find eurobot_software_simulacion)/description/meshes/rueda.stl" scale="1 1 1"/> para cuando se añada el stl-->
                 </geometry>
                 <material name="blue"/>
             </visual>
             <collision>
                 <geometry>
-                    <cylinder radius="0.0325" length="0.04"/>
+                    <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
                 </geometry>
             </collision>
             
-            <xacro:inertial_cylinder mass="1.0" length="0.04" radius="0.0325">
+            <xacro:inertial_cylinder mass="1.0" length="${wheel_length}" radius="${wheel_radius}"> --------------------------
                 <origin xyz="0 0 0" rpy="0 0 0"/>
             </xacro:inertial_cylinder>
 
@@ -173,8 +188,7 @@
     <joint name="caster_wheel_joint" type="fixed">
         <parent link="chassis"/>                                                             <!-- parent es a quien nos unimos-->
         <child link="caster_wheel"/>                                                         <!-- child es quien se une al parent-->
-        <origin xyz="0.25 0 0.0"/>
-
+        <origin xyz="${chassis_x - wheel_radius} 0 0"/>
     </joint>
 
     <!-- LINK: Las propiedades físicas de la pieza -->
@@ -183,7 +197,7 @@
         <visual>
             <origin xyz="0 0 0.0"/>
             <geometry>
-                <sphere radius="0.0325"/>
+                <sphere radius="${wheel_radius}"/>
             </geometry>
             <material name="blue"/>
         </visual>
@@ -191,11 +205,11 @@
         <collision>
             <origin xyz="0 0 0"/>
             <geometry>
-                <sphere radius="0.0325"/>
+                <sphere radius="${wheel_radius}"/>
             </geometry>
         </collision>
         
-        <xacro:inertial_sphere mass="0.1" radius="0.0325">
+        <xacro:inertial_sphere mass="0.1" radius="${wheel_radius}">
             <origin xyz="0 0 0" rpy="0 0 0"/>
         </xacro:inertial_sphere>
     
@@ -214,37 +228,90 @@
     <!-- ########################################################## -->
     <!-- ########################################################## -->
 
-    <gazebo>
-        <plugin filename="ignition-gazebo-diff-drive-system" name="ignition::gazebo::systems::DiffDrive">
-            <left_joint>left_wheel_joint</left_joint>
-            <right_joint>right_wheel_joint</right_joint>
-            <!-- Separación total entre ruedas (0.2 + 0.2) -->
-            <wheel_separation>0.4</wheel_separation>
-            <!-- Radio de la rueda en metros -->
-            <wheel_radius>0.0325</wheel_radius>
-            <odom_publish_frequency>50</odom_publish_frequency>
-            <topic>cmd_vel</topic>
-        </plugin>
-    </gazebo>
+    <!-- No entra en este if nunca pero quiero mantener cómo se hace únicamente con gazebo, la lógica actual es con ros2_control-->
+    <xacro:if value="false">
+        <gazebo>
+            <plugin filename="ignition-gazebo-diff-drive-system" name="ignition::gazebo::systems::DiffDrive">
+                <left_joint>left_wheel_joint</left_joint>
+                <right_joint>right_wheel_joint</right_joint>
+                <!-- Separación total entre ruedas (0.2 + 0.2) -->
+                <wheel_separation>${wheel_separation}</wheel_separation>
+                <!-- Radio de la rueda en metros -->
+                <wheel_radius>${wheel_radius}</wheel_radius>
+                <odom_publish_frequency>50</odom_publish_frequency>
+                <topic>cmd_vel</topic>
+            </plugin>
+        </gazebo>
 
 
-    <gazebo>
-        <plugin filename="ignition-gazebo-diff-drive-system" name="ignition::gazebo::systems::DiffDrive">
-            <left_joint>left_wheel_joint</left_joint>
-            <right_joint>right_wheel_joint</right_joint>
-            <wheel_separation>0.4</wheel_separation>
-            <wheel_radius>0.0325</wheel_radius>
+        <gazebo>
+            <plugin filename="ignition-gazebo-diff-drive-system" name="ignition::gazebo::systems::DiffDrive">
+                <left_joint>left_wheel_joint</left_joint>
+                <right_joint>right_wheel_joint</right_joint>
+                <wheel_separation>${wheel_separation}</wheel_separation>
+                <wheel_radius>${wheel_radius}</wheel_radius>
 
-            <!-- Publica la odeometría a 50 Hz -->
-            <odom_publish_frequency>50</odom_publish_frequency>
-            <!-- Topics -->
-            <topic>cmd_vel</topic>
-            <odom_topic>odom</odom_topic>
-            <tf_topic>tf</tf_topic>
-            <!-- Frames: nombre de los datos que van por el topic tf-->
-            <frame_id>odom</frame_id>                                                       <!-- frame_id es el nombre del frame padre, el que se no mueve -->
-            <child_frame_id>base_link</child_frame_id>                                      <!-- child_frame_id es el nombre del frame hijo, el que se mueve respecto al padre -->   
-        </plugin>
-    </gazebo>
+                <!-- Publica la odeometría a 50 Hz -->
+                <odom_publish_frequency>50</odom_publish_frequency>
+                <!-- Topics -->
+                <topic>cmd_vel</topic>
+                <odom_topic>odom</odom_topic>
+                <tf_topic>tf</tf_topic>
+                <!-- Frames: nombre de los datos que van por el topic tf-->
+                <frame_id>odom</frame_id>                                                       <!-- frame_id es el nombre del frame padre, el que se no mueve -->
+                <child_frame_id>base_link</child_frame_id>                                      <!-- child_frame_id es el nombre del frame hijo, el que se mueve respecto al padre -->   
+            </plugin>
+        </gazebo>
+    </xacro:if> 
+    
+    <!-- ########################################################## -->
+    <!-- ####################  ROS2_CONTROL  ###################### -->
+    <!-- ########################################################## -->
+    <!-- Se definen los plugins y los comandos de las partes móviles-->
+
+    <ros2_control name="EurobotSystem" type="system">
+    
+        <xacro:if value="$(arg use_sim)">
+            <hardware>
+                <plugin>ign_ros2_control/IgnitionSystem</plugin>
+            </hardware>
+        </xacro:if>
+
+        <xacro:unless value="$(arg use_sim)">
+            <hardware>
+                <plugin>eurobot_software_real/ESP32HardwareInterface</plugin>
+            </hardware>
+        </xacro:unless>
+
+        <joint name="left_wheel_joint">
+            <command_interface name="velocity">                                                 <!-- Command interface define el canal de publicación mientras que state_interface define el canal de lectura -->
+                <param name="min">-10</param>
+                <param name="max">10</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+
+        <joint name="right_wheel_joint">
+            <command_interface name="velocity">
+                <param name="min">-10</param>
+                <param name="max">10</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+    </ros2_control>
+
+    <!-- Plugin de integración para que Gazebo cargue ros2_control -->
+    <xacro:if value="$(arg use_sim)">
+        <gazebo>
+            <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin">
+                <parameters>$(arg controllers_yaml)</parameters>
+                <ros>
+                    <remapping>/diff_cont/cmd_vel_unstamped:=/cmd_vel</remapping>
+                </ros>
+            </plugin>
+        </gazebo>
+    </xacro:if>
 
 </robot>
