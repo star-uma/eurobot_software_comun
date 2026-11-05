@@ -1,0 +1,150 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- ########################################################## -->
+    <!-- ####################   PARÁMETROS     #################### -->
+    <!-- ########################################################## -->
+
+    <xacro:property name="params_path" value="$(find eurobot_software_description)/config/parametros_robot.yaml" />
+    <xacro:property name="params" value="${xacro.load_yaml(params_path)}" />
+
+    <!-- Extraer la sección del actuador -->
+    <xacro:property name="act" value="${params['actuator']}" />
+
+    <!-- Variables del actuador -->
+    <xacro:property name="act_offset_x" value="${act['offset_x']}" />
+    <xacro:property name="act_offset_y" value="${act['offset_y']}" />
+    <xacro:property name="act_offset_z" value="${act['offset_z']}" />
+
+    <xacro:property name="tower_h" value="${act['tower_height']}" />
+    <xacro:property name="tower_w" value="${act['tower_width']}" />
+
+    <xacro:property name="elev_mass" value="${act['elevator_mass']}" />
+    <xacro:property name="elev_min_z" value="${act['elevator_min_z']}" />
+    <xacro:property name="elev_max_z" value="${act['elevator_max_z']}" />
+
+    <xacro:property name="suct_mass" value="${act['suction_mass']}" />
+    <xacro:property name="suct_offset_x" value="${act['suction_offset_x']}" />
+    <xacro:property name="suct_r" value="${act['suction_radius']}" />
+
+    <!-- Geometrías derivadas de los parámetros -->
+    <xacro:property name="carriage_x" value="${tower_w * 1.5}" />
+    <xacro:property name="carriage_y" value="${tower_w * 2.0}" />
+    <xacro:property name="carriage_z" value="${tower_w * 1.25}" />
+    <xacro:property name="suct_length" value="${suct_r}" />
+
+    <!-- ########################################################## -->
+    <!-- #####################   LIBRERÍAS    ##################### -->
+    <!-- ########################################################## -->
+
+    <xacro:include filename="inertial_macros.xacro" />
+
+    <!-- ########################################################## -->
+    <!-- ##################  TORRE GUÍA (ESTÁTICA) ################ -->
+    <!-- ########################################################## -->
+
+    <joint name="tower_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="tower_link"/>
+        <origin xyz="${act_offset_x} ${act_offset_y} ${act_offset_z}" rpy="0 0 0"/>
+    </joint>
+
+    <link name="tower_link">
+        <visual>
+            <origin xyz="0 0 ${tower_h/2}" rpy="0 0 0"/>
+            <geometry>
+                <box size="${tower_w} ${tower_w} ${tower_h}"/>
+            </geometry>
+            <material name="grey">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 ${tower_h/2}" rpy="0 0 0"/>
+            <geometry>
+                <box size="${tower_w} ${tower_w} ${tower_h}"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_box mass="0.2" x="${tower_w}" y="${tower_w}" z="${tower_h}">
+            <origin xyz="0 0 ${tower_h/2}" rpy="0 0 0"/>
+        </xacro:inertial_box>
+    </link>
+
+    <!-- ########################################################## -->
+    <!-- ########### CARRO DEL ASCENSOR (ARTICULACIÓN Z) ########## -->
+    <!-- ########################################################## -->
+
+    <joint name="elevator_joint" type="prismatic">
+        <parent link="tower_link"/>
+        <child link="elevator_carriage_link"/>
+        <origin xyz="0 0 ${carriage_z}" rpy="0 0 0"/>
+        <axis xyz="0 0 1"/>
+        <limit lower="${elev_min_z}" upper="${elev_max_z}" effort="500.0" velocity="0.5"/>
+        <!-- Añadir amortiguación y fricción explícitas para el solver de Gazebo -->
+        <dynamics damping="0.5" friction="0.0"/>
+    </joint>
+
+    <!-- Forzar a Gazebo a mantener la física de la articulación -->
+    <gazebo reference="elevator_joint">
+        <implicitSpringDamper>true</implicitSpringDamper>
+    </gazebo>
+
+    <link name="elevator_carriage_link">
+        <visual>
+            <!-- Añadida luz de 1mm en X (+0.001) para despejar el plano de colisión de la torre -->
+            <origin xyz="${(tower_w/2) + (carriage_x/2) + 0.001} 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${carriage_x} ${carriage_y} ${carriage_z}"/>
+            </geometry>
+            <material name="blue">
+                <color rgba="0.0 0.0 0.8 1.0"/>
+            </material>
+        </visual>
+      
+        <collision>
+            <origin xyz="${(tower_w/2) + (carriage_x/2) + 0.001} 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${carriage_x} ${carriage_y} ${carriage_z}"/>
+            </geometry>
+        </collision>
+
+        <!-- Corregido origen inercial para coincidir con visual y collision -->
+        <xacro:inertial_box mass="${elev_mass}" x="${carriage_x}" y="${carriage_y}" z="${carriage_z}">
+            <origin xyz="${(tower_w/2) + (carriage_x/2) + 0.001} 0 0" rpy="0 0 0"/>
+        </xacro:inertial_box>
+    </link>
+
+    <!-- ########################################################## -->
+    <!-- ################ CABEZAL DE VENTOSAS ##################### -->
+    <!-- ########################################################## -->
+    
+    <!-- El joint desplaza y orienta la ventosa justo al frente del carro -->
+    <joint name="suction_head_joint" type="fixed">
+        <parent link="elevator_carriage_link"/>
+        <child link="suction_cup_link"/>
+        <origin xyz="${(tower_w/2) + carriage_x + (suct_length/2) + 0.001} 0 0" rpy="0 ${pi/2} 0"/>
+    </joint>
+
+    <link name="suction_cup_link">
+        <visual>
+            <!-- Origen local en 0 0 0 para no duplicar la transformación del joint -->
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="${suct_r}" length="${suct_length}"/>
+            </geometry>
+            <material name="black">
+                <color rgba="0.1 0.1 0.1 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="${suct_r}" length="${suct_length}"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_cylinder mass="${suct_mass}" length="${suct_length}" radius="${suct_r}">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_cylinder>
+    </link>
+
+</robot>

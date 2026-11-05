@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- ########################################################## -->
+    <!-- ####################   PARÁMETROS     #################### -->
+    <!-- ########################################################## -->
+
+    <!-- Cargar el archivo YAML de parámetros centralizado -->
+    <xacro:property name="params_path" value="$(find eurobot_software_description)/config/parametros_robot.yaml" />
+    <xacro:property name="params" value="${xacro.load_yaml(params_path)}" />
+
+
+    <xacro:property name="base" value="${params['base']}" />
+    <xacro:property name="wheel_vel_max" value="${base['wheel_vel_max']}" />
+
+    <xacro:property name="act" value="${params['actuator']}" />
+    <xacro:property name="elev_min_z" value="${act['elevator_min_z']}" />
+    <xacro:property name="elev_max_z" value="${act['elevator_max_z']}" />
+    <xacro:property name="elev_vel_max" value="${act['elevator_vel_max']}" />
+
+    <ros2_control name="EurobotSystem" type="system">
+    
+        <xacro:if value="$(arg use_sim)">
+            <hardware>
+                <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+            </hardware>
+        </xacro:if>
+
+        <xacro:unless value="$(arg use_sim)">
+            <hardware>
+                <plugin>eurobot_software_real/ESP32HardwareInterface</plugin>
+            </hardware>
+        </xacro:unless>
+
+        <!-- Ruedas motrices -->
+        <joint name="left_wheel_joint">
+            <command_interface name="velocity">
+                <param name="min">${-wheel_vel_max}</param>
+                <param name="max">${wheel_vel_max}</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+
+        <joint name="right_wheel_joint">
+            <command_interface name="velocity">
+                <param name="min">${-wheel_vel_max}</param>
+                <param name="max">${wheel_vel_max}</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+
+        <!-- Actuador del ascensor -->
+        <joint name="elevator_joint">
+            <command_interface name="position">
+                <param name="min">${elev_min_z}</param>
+                <param name="max">${elev_max_z}</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+
+    </ros2_control>
+
+    <!-- Plugin de integración para que Gazebo cargue ros2_control -->
+    <xacro:if value="$(arg use_sim)">
+        <gazebo>
+            <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">                
+                <parameters>$(arg controllers_yaml)</parameters>
+                <position_proportional_gain>2000.0</position_proportional_gain>
+                <ros>
+                    <remapping>/diff_cont/cmd_vel_unstamped:=/cmd_vel</remapping>
+                </ros>
+            </plugin>
+        </gazebo>
+    </xacro:if>
+
+</robot>
+
+
+

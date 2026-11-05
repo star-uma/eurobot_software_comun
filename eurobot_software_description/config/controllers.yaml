@@ -2,14 +2,15 @@ controller_manager:
   ros__parameters:
     update_rate: 50 # Hz
 
-    # Registra dos controladores activos: el dif_drive y el emisor de estados
     diff_cont:
       type: diff_drive_controller/DiffDriveController
 
     joint_broad:
       type: joint_state_broadcaster/JointStateBroadcaster
+    
+    actuator_cont:
+      type: joint_trajectory_controller/JointTrajectoryController
 
-# Configuración matemática de la tracción diferencial
 diff_cont:
   ros__parameters:
     publish_rate: 50.0
@@ -46,3 +47,29 @@ diff_cont:
         has_acceleration_limits: true
         max_acceleration: 2.0
         min_acceleration: -2.0
+
+actuator_cont:
+  ros__parameters:
+    joints:
+      - elevator_joint        
+
+    command_interfaces:
+      - position              
+    
+    state_interfaces:
+      - position
+      - velocity
+
+    # Ganancias PID necesarias para la interfaz de posición en simulación
+    gains:
+      elevator_joint:
+        p: 3000.0
+        i: 10.0
+        d: 50.0
+        ff_velocity_scale: 1.0
+
+    constraints:
+      stopped_velocity_tolerance: 0.05
+      goal_time: 2.0
+      elevator_joint:
+        goal: 0.05

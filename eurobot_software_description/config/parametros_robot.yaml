@@ -1,7 +1,28 @@
-# Dimensions y física del robot
-wheel_radius: 0.0325
-wheel_separation: 0.4
-wheel_length: 0.04
-chassis_length: 0.3
-chassis_width: 0.3
-chassis_height: 0.15
+base:
+  wheel_radius: 0.0325
+  wheel_separation: 0.4
+  wheel_length: 0.04
+  wheel_vel_max: 10
+  chassis_length: 0.3
+  chassis_width: 0.3
+  chassis_height: 0.15
+
+
+actuator:
+  # Posición del actuador respecto a base_link
+  offset_x: 0.10            
+  offset_y: 0.0              
+  offset_z: 0.15             
+
+  # Estructura del Ascensor (Eje Z)
+  elevator_mass: 0.5
+  elevator_max_z: 0.38       
+  elevator_min_z: 0.0        
+  elevator_vel_max: 0.5        
+  tower_height: 0.45         
+  tower_width: 0.03         
+
+  # Cabezal de Ventosas
+  suction_mass: 0.1
+  suction_offset_x: 0.08     
+  suction_radius: 0.02       

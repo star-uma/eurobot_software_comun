@@ -3,24 +3,24 @@
 
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="eurobot">
 
+    <!-- ########################################################## -->
+    <!-- ####################   PARÁMETROS     #################### -->
+    <!-- ########################################################## -->
 
     <!-- Cargar el archivo YAML de parámetros centralizado -->
     <xacro:property name="params_path" value="$(find eurobot_software_description)/config/parametros_robot.yaml" />
     <xacro:property name="params" value="${xacro.load_yaml(params_path)}" />
 
+    <!-- Extraer la sección de la base -->
+    <xacro:property name="base" value="${params['base']}" />
+
     <!-- Extraer variables físicas -->
-    <xacro:property name="wheel_radius" value="${params['wheel_radius']}" />
-    <xacro:property name="wheel_separation" value="${params['wheel_separation']}" />
-    <xacro:property name="wheel_length" value="${params['wheel_length']}" />
-    <xacro:property name="chassis_x" value="${params['chassis_length']}" />
-    <xacro:property name="chassis_y" value="${params['chassis_width']}" />
-    <xacro:property name="chassis_z" value="${params['chassis_height']}" />
-
-    <!-- Argumento para alternar entre simulación (true) y robot real (false) -->
-    <xacro:arg name="use_sim" default="true"/>
-
-    <!-- Argumento para -->
-    <xacro:arg name="controllers_yaml" default="$(find eurobot_software_description)/config/controllers.yaml"/>
+    <xacro:property name="wheel_radius" value="${base['wheel_radius']}" />
+    <xacro:property name="wheel_separation" value="${base['wheel_separation']}" />
+    <xacro:property name="wheel_length" value="${base['wheel_length']}" />
+    <xacro:property name="chassis_x" value="${base['chassis_length']}" />
+    <xacro:property name="chassis_y" value="${base['chassis_width']}" />
+    <xacro:property name="chassis_z" value="${base['chassis_height']}" />
 
     <!-- ########################################################## -->
     <!-- #####################   LIBRERÍAS    ##################### -->
@@ -263,55 +263,4 @@
             </plugin>
         </gazebo>
     </xacro:if> 
-    
-    <!-- ########################################################## -->
-    <!-- ####################  ROS2_CONTROL  ###################### -->
-    <!-- ########################################################## -->
-    <!-- Se definen los plugins y los comandos de las partes móviles-->
-
-    <ros2_control name="EurobotSystem" type="system">
-    
-        <xacro:if value="$(arg use_sim)">
-            <hardware>
-                <plugin>ign_ros2_control/IgnitionSystem</plugin>
-            </hardware>
-        </xacro:if>
-
-        <xacro:unless value="$(arg use_sim)">
-            <hardware>
-                <plugin>eurobot_software_real/ESP32HardwareInterface</plugin>
-            </hardware>
-        </xacro:unless>
-
-        <joint name="left_wheel_joint">
-            <command_interface name="velocity">                                                 <!-- Command interface define el canal de publicación mientras que state_interface define el canal de lectura -->
-                <param name="min">-10</param>
-                <param name="max">10</param>
-            </command_interface>
-            <state_interface name="position"/>
-            <state_interface name="velocity"/>
-        </joint>
-
-        <joint name="right_wheel_joint">
-            <command_interface name="velocity">
-                <param name="min">-10</param>
-                <param name="max">10</param>
-            </command_interface>
-            <state_interface name="position"/>
-            <state_interface name="velocity"/>
-        </joint>
-    </ros2_control>
-
-    <!-- Plugin de integración para que Gazebo cargue ros2_control -->
-    <xacro:if value="$(arg use_sim)">
-        <gazebo>
-            <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin">
-                <parameters>$(arg controllers_yaml)</parameters>
-                <ros>
-                    <remapping>/diff_cont/cmd_vel_unstamped:=/cmd_vel</remapping>
-                </ros>
-            </plugin>
-        </gazebo>
-    </xacro:if>
-
 </robot>

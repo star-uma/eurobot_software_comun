@@ -1,13 +1,15 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="eurobot">
+
+    <!-- Declaración de argumentos globales para Xacro -->
+    <xacro:arg name="use_sim" default="true" />
+    <xacro:arg name="controllers_yaml" default="$(find eurobot_software_description)/config/controllers.yaml" />
+
+    <!-- Inclusión de los módulos del robot -->
     <xacro:include filename="robot_core.xacro" />
     <xacro:include filename="lidar.xacro" />
     <xacro:include filename="camara.xacro" />
-
-    <gazebo>
-        <plugin filename="ignition-gazebo-joint-state-publisher-system" name="ignition::gazebo::systems::JointStatePublisher">
-            <topic>joint_states</topic>
-        </plugin>
-    </gazebo>
+    <xacro:include filename="actuador.xacro" />
+    <xacro:include filename="ros2_control.xacro" />
 
 </robot>
