@@ -51,13 +51,23 @@
             <state_interface name="velocity"/>
         </joint>
 
-    <!-- Actuador del ascensor -->
-    <joint name="elevator_joint">
-        <!-- Interfaz cambiada a esfuerzo (fuerza bruta) -->
-        <command_interface name="effort"/>
-        <state_interface name="position"/>
-        <state_interface name="velocity"/>
-    </joint>
+    <!-- PERFIL SIMULACIÓN: ROS 2 calcula el esfuerzo -->
+    <xacro:if value="$(arg use_sim)">
+        <joint name="elevator_joint">
+            <command_interface name="effort"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+    </xacro:if>
+
+    <!-- PERFIL REAL: La ESP32 recibe posición y ella hace su propio PID -->
+    <xacro:unless value="$(arg use_sim)">
+        <joint name="elevator_joint">
+            <command_interface name="position"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+    </xacro:unless>
 
     </ros2_control>
 

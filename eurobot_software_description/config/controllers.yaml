@@ -62,6 +62,10 @@ actuator_cont:
       - velocity
       
     # PID gestionado por ROS 2
+    # Ajsutar PID:
+    # 1. Ajustar P hasta que el sistema oscile alrededor del objetivo
+    # 2. Ajustar D hasta que el sistema deje de oscilar (normalente )
+    # 3. Ajustar I hasta que el sistema alcance el objetivo sin error de estado estacionario
     gains:
       elevator_joint:
         p: 2000.0
