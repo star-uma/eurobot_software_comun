@@ -1,0 +1,17 @@
+teleop_twist_joy_node:
+  ros__parameters:
+    # Configuración de seguridad (Botón RB)
+    require_enable_button: true
+    enable_button: 7 
+
+    # Eje Y del joystick izquierdo (Avanzar/Retroceder)
+    axis_linear:
+      x: 1
+    scale_linear:
+      x: 0.5  # Velocidad máxima en m/s para pruebas
+
+    # Eje X del joystick izquierdo (Girar sobre sí mismo)
+    axis_angular:
+      yaw: 0
+    scale_angular:
+      yaw: 1.0  # Velocidad de giro máxima en rad/s
