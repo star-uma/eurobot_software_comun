@@ -1,0 +1,29 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 50
+    
+    joint_broad:
+      type: joint_state_broadcaster/JointStateBroadcaster
+      
+    test_cont:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+test_cont:
+  ros__parameters:
+    joints:
+      - elevator_joint
+    
+    # El controlador ahora escupe esfuerzo (fuerza) a Gazebo
+    command_interfaces:
+      - effort
+      
+    state_interfaces:
+      - position
+      - velocity
+      
+    # PID gestionado 100% por ROS 2, ignorando a Gazebo
+    gains:
+      elevator_joint:
+        p: 2000.0
+        i: 10.0
+        d: 50.0

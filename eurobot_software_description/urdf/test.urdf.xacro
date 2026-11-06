@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="test_robot">
+
+    <!-- Anclaje global -->
+    <link name="world"></link>
+    <joint name="world_joint" type="fixed">
+        <parent link="world"/>
+        <child link="base_link"/>
+        <origin xyz="0 0 0.1"/>
+    </joint>
+    <link name="base_link"></link>
+
+    <xacro:include filename="actuador.xacro" />
+
+    <ros2_control name="TestSystem" type="system">
+        <hardware>
+            <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+        </hardware>
+        <joint name="elevator_joint">
+            <!-- CAMBIO CLAVE: Pasamos de position a effort -->
+            <command_interface name="effort"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+    </ros2_control>
+
+    <gazebo>
+        <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+            <parameters>$(find eurobot_software_description)/config/test_controllers.yaml</parameters>
+        </plugin>
+    </gazebo>
+</robot>
