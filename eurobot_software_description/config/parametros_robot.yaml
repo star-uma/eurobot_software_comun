@@ -10,9 +10,9 @@ base:
 
 actuator:
   # Posición del actuador respecto a base_link
-  offset_x: 0.10            
-  offset_y: 0.0              
-  offset_z: 0.15             
+  offset_x: 0.33            
+  offset_y: 0.2              
+  offset_z: 0.0             
 
   # Estructura del Ascensor (Eje Z)
   elevator_mass: 0.5

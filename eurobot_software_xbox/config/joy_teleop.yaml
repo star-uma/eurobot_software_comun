@@ -1,0 +1,21 @@
+xbox_teleop_node:
+  ros__parameters:
+    # Configuración de seguridad (Botón RB = índice 7 en este mando)
+    require_enable_button: true
+    enable_button: 7
+
+    # Eje Y del joystick izquierdo (Avanzar/Retroceder)
+    axis_linear_x: 1
+    scale_linear_x: 0.5  # Velocidad máxima en m/s para pruebas
+
+    # Eje X del joystick izquierdo (Girar sobre sí mismo)
+    axis_angular_yaw: 0
+    scale_angular_yaw: 1.0  # Velocidad de giro máxima en rad/s
+
+    # Control del actuador (elevator_joint) con la flecha arriba/abajo
+    actuator_axis: 7          # eje 7: flecha arriba (+1) / abajo (-1)
+    actuator_velocity: 0.1    # m/s de desplazamiento del objetivo al mantener pulsado
+    actuator_min: 0.0         # límite inferior (m)
+    actuator_max: 0.38        # límite superior (m)
+    actuator_deadzone: 0.5    # umbral para considerar la flecha pulsada
+    actuator_rate: 20.0       # Hz de publicación de la trayectoria
