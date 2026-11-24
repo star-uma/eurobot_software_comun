@@ -22,16 +22,20 @@
     <xacro:property name="elev_mass" value="${act['elevator_mass']}" />
     <xacro:property name="elev_min_z" value="${act['elevator_min_z']}" />
     <xacro:property name="elev_max_z" value="${act['elevator_max_z']}" />
-
+  
+    <xacro:property name="motor_offset_y" value="${act['motor_offset_y']}" />
+    <xacro:property name="motor_radius" value="${act['motor_radius']}" />
+    <xacro:property name="motor_mass" value="${act['motor_mass']}" />
+  
     <xacro:property name="suct_mass" value="${act['suction_mass']}" />
     <xacro:property name="suct_offset_x" value="${act['suction_offset_x']}" />
     <xacro:property name="suct_r" value="${act['suction_radius']}" />
 
-    <!-- Geometrías derivadas de los parámetros -->
-    <xacro:property name="carriage_x" value="${tower_w * 1.5}" />
-    <xacro:property name="carriage_y" value="${tower_w * 2.0}" />
-    <xacro:property name="carriage_z" value="${tower_w * 1.25}" />
     <xacro:property name="suct_length" value="${suct_r}" />
+
+    <xacro:property name="carriage_x" value="${act['holder_x']}" />
+    <xacro:property name="carriage_y" value="${suct_r * 6.0 + act['holder_offset_y']}" />
+    <xacro:property name="carriage_z" value="${act['holder_z']}" />
 
     <!-- ########################################################## -->
     <!-- #####################   LIBRERÍAS    ##################### -->
@@ -69,6 +73,38 @@
             <origin xyz="0 0 ${tower_h/2}" rpy="0 0 0"/>
         </xacro:inertial_box>
     </link>
+    
+    <!-- ########################################################## -->
+    <!-- ################ MOTOR GIRO CABEZAL  ##################### -->
+    <!-- ########################################################## -->
+    
+    <joint name="motor_head_joint" type="continuous">
+        <parent link="motor_head_link"/>
+        <child link="elevator_carriage_link"/>
+        <origin xyz="0 0 0" rpy="0 ${pi/2} 0"/>
+    </joint>
+
+    <link name="motor_head_link">
+        <visual>
+            <!-- Origen local en 0 0 0 para no duplicar la transformación del joint -->
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="${motor_radius}" length="${tower_w}"/>
+            </geometry>
+            <material name="black">
+                <color rgba="0.1 0.1 0.1 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="${motor_radius}" length="${tower_w}"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_cylinder mass="${motor_mass}" length="${tower_w}" radius="${motor_radius}">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_cylinder>
+    </link>
 
     <!-- ########################################################## -->
     <!-- ########### CARRO DEL ASCENSOR (ARTICULACIÓN Z) ########## -->
@@ -76,9 +112,9 @@
 
     <joint name="elevator_joint" type="prismatic">
         <parent link="tower_link"/>
-        <child link="elevator_carriage_link"/>
-        <origin xyz="0 0 ${carriage_z}" rpy="0 0 0"/>
-        <axis xyz="0 0 1"/>
+        <child link="motor_head_link"/>
+        <origin xyz="0 ${tower_w + motor_offset_y} ${carriage_z}" rpy="0 ${-pi/2} 0"/>
+        <axis xyz="1 0 0"/>
         <limit lower="${elev_min_z}" upper="${elev_max_z}" effort="500.0" velocity="0.5"/>
         <!-- Añadir amortiguación y fricción explícitas para el solver de Gazebo -->
         <dynamics damping="0.5" friction="0.0"/>

@@ -7,20 +7,73 @@ base:
   chassis_width: 0.3
   chassis_height: 0.15
 
+lidar:
+  # Posición del LIDAR respecto a base_link
+  offset_x: 0.1
+  offset_y: 0.0
+  offset_z: 0.25
+
+  lidar_mass: 0.2
+
+  lidar_radius: 0.03
+  lidar_height: 0.04
+
+  scan_samples: 360
+  scan_resolution: 1.0
+  scan_angle: 3.14159
+  
+  range_min: 0.12
+  range_max: 6.0
+  range_resolution: 0.01
+
+  update_rate: 10.0
+
+camera:
+  # Posición de la cámara respecto a base_link
+  offset_x: 0.305
+  offset_y: 0.0
+  offset_z: 0.15
+
+  camera_mass: 0.1
+
+  camera_x: 0.02
+  camera_y: 0.06
+  camera_z: 0.04
+
+  camera_fov: 1.089
+
+  image_width: 640
+  image_height: 480
+  image_format: R8G8B8
 
 actuator:
   # Posición del actuador respecto a base_link
   offset_x: 0.33            
   offset_y: 0.2              
   offset_z: 0.0             
+  
+  # Torre
+       
+  elevator_vel_max: 0.5 
 
-  # Estructura del Ascensor (Eje Z)
+  tower_height: 0.45         
+  tower_width: 0.03 
+
   elevator_mass: 0.5
   elevator_max_z: 0.38       
-  elevator_min_z: 0.0        
-  elevator_vel_max: 0.5        
-  tower_height: 0.45         
-  tower_width: 0.03         
+  elevator_min_z: 0.0 
+
+  # Motor de giro
+  motor_mass: 0.2
+  motor_offset_y: 0.01
+  motor_radius: 0.02
+
+  # Sujeción del cabezal de ventosas
+  holder_mass: 0.1
+
+  holder_x: 0.05
+  holder_offset_y: 0.05
+  holder_z: 0.05
 
   # Cabezal de Ventosas
   suction_mass: 0.1

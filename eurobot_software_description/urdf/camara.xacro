@@ -1,17 +1,42 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
     
+    <!-- ########################################################## -->
+    <!-- ####################   PARÁMETROS     #################### -->
+    <!-- ########################################################## -->
+
+    <xacro:property name="params_path" value="$(find eurobot_software_description)/config/parametros_robot.yaml" />
+    <xacro:property name="params" value="${xacro.load_yaml(params_path)}" />
+
+    <!-- Extraer la sección de la cámara -->
+    <xacro:property name="act" value="${params['camera']}" />
+
+    <!-- Variables de la cámara -->
+    <xacro:property name="cam_offset_x" value="${act['offset_x']}" />
+    <xacro:property name="cam_offset_y" value="${act['offset_y']}" />
+    <xacro:property name="cam_offset_z" value="${act['offset_z']}" />
+
+    <xacro:property name="cam_pos_x" value="${act['camera_x']}" />
+    <xacro:property name="cam_pos_y" value="${act['camera_y']}" />
+    <xacro:property name="cam_pos_z" value="${act['camera_z']}" />
+
+    <xacro:property name="cam_fov" value="${act['camera_fov']}" />
+    <xacro:property name="image_width" value="${act['image_width']}" />
+    <xacro:property name="image_height" value="${act['image_height']}" />
+    <xacro:property name="image_format" value="${act['image_format']}" />
+
+
     <!-- Posición de la cámara-->
     <joint name="camera_joint" type="fixed">
         <parent link="chassis"/>
         <child link="camera_link"/>
         <!-- Ajusta la posición para que quede en el frontal superior del robot -->
-        <origin xyz="0.305 0 0.15" rpy="0 0 0"/>
+        <origin xyz="${cam_offset_x} ${cam_offset_y} ${cam_offset_z}" rpy="0 0 0"/>
     </joint>
 
     <link name="camera_link">
         <visual>
-            <geometry><box size="0.02 0.06 0.04"/></geometry>
+            <geometry><box size="${cam_pos_x} ${cam_pos_y} ${cam_pos_z}"/></geometry>
             <material name="black"><color rgba="0.1 0.1 0.1 1"/></material>
         </visual>
     </link>

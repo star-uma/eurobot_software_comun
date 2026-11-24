@@ -1,16 +1,46 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+   
+    <!-- ########################################################## -->
+    <!-- ####################   PARÁMETROS     #################### -->
+    <!-- ########################################################## -->
+
+    <xacro:property name="params_path" value="$(find eurobot_software_description)/config/parametros_robot.yaml" />
+    <xacro:property name="params" value="${xacro.load_yaml(params_path)}" />
+
+    <!-- Extraer la sección de la cámara -->
+    <xacro:property name="lidar" value="${params['lidar']}" />
+
+    <!-- Variables del lidar -->
+    <xacro:property name="lidar_offset_x" value="${lidar['offset_x']}"/>
+    <xacro:property name="lidar_offset_y" value="${lidar['offset_y']}"/>
+    <xacro:property name="lidar_offset_z" value="${lidar['offset_z']}"/>
+
+    <xacro:property name="lidar_mass" value="${lidar['lidar_mass']}"/>
+    
+    <xacro:property name="lidar_radius" value="${lidar['lidar_radius']}"/>
+    <xacro:property name="lidar_height" value="${lidar['lidar_height']}"/>
+    
+    <xacro:property name="scan_samples" value="${lidar['scan_samples']}"/>
+    <xacro:property name="scan_resolution" value="${lidar['scan_resolution']}"/>
+    <xacro:property name="scan_angle" value="${lidar['scan_angle']}"/>
+    
+    <xacro:property name="range_min" value="${lidar['range_min']}"/>
+    <xacro:property name="range_max" value="${lidar['range_max']}"/>
+    <xacro:property name="range_resolution" value="${lidar['range_resolution']}"/>
+
+    <xacro:property name="update_rate" value="${lidar['update_rate']}"/>
 
     <joint name="laser_joint" type="fixed">
         <parent link="chassis"/>
         <child link="laser_frame"/>
-        <origin xyz="0.1 0 0.25" rpy="0 0 0"/>
+        <origin xyz="${lidar_offset_x} ${lidar_offset_y} ${lidar_offset_z}" rpy="0 0 0"/>
     </joint>
 
     <link name="laser_frame">
         <visual>
             <geometry>
-                <cylinder radius="0.03" length="0.04"/>
+                <cylinder radius="${lidar_radius}" length="${lidar_height}"/>
             </geometry>
             <material name="black">
                 <color rgba="0.1 0.1 0.1 1"/>
@@ -23,22 +53,22 @@
             <pose>0 0 0 0 0 0</pose>
             <always_on>true</always_on>
             <visualize>true</visualize>
-            <update_rate>10</update_rate>
+            <update_rate>${update_rate}</update_rate>
             <topic>scan</topic>
             <gz_frame_id>laser_frame</gz_frame_id>
             <lidar>
                 <scan>
                     <horizontal>
-                        <samples>360</samples>
-                        <resolution>1.0</resolution>
-                        <min_angle>-3.14159</min_angle>
-                        <max_angle>3.14159</max_angle>
+                        <samples>${scan_samples}</samples>
+                        <resolution>${scan_resolution}</resolution>
+                        <min_angle>-${scan_angle}</min_angle>
+                        <max_angle>${scan_angle}</max_angle>
                     </horizontal>
                 </scan>
                 <range>
-                    <min>0.12</min>
-                    <max>8.0</max>
-                    <resolution>0.01</resolution>
+                    <min>${range_min}</min>
+                    <max>${range_max}</max>
+                    <resolution>${range_resolution}</resolution>
                 </range>
             </lidar>
         </sensor>
